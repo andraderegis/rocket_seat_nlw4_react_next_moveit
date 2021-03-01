@@ -1,3 +1,5 @@
+import { GetServerSideProps } from 'next';
+
 import Head from 'next/head';
 
 import { CompletedChallenges } from "components/CompletedChallenges";
@@ -7,28 +9,53 @@ import { Profile } from "components/Profile";
 import { ChallengeBox } from 'components/ChallengeBox';
 
 import styles from 'styles/pages/Home.module.css';
+
 import { CountdownProvider } from 'context/CountdownContext';
+import { ChallengesProvider } from 'context/ChallengesContext';
 
-export default function Home() {
+interface HomeProps {
+  challengesCompleted: number;
+  currentExperience: number;
+  level: number;
+}
+
+export default function Home(props: HomeProps) {
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Início | move.it</title>
-      </Head>
-      <ExperienceBar />
+    <ChallengesProvider
+      challengesCompleted={props.challengesCompleted}
+      currentExperience={props.currentExperience}
+      level={props.level}>
+      <div className={styles.container}>
+        <Head>
+          <title>Início | move.it</title>
+        </Head>
+        <ExperienceBar />
 
-      <CountdownProvider>
-        <section>
-          <div>
-            <Profile />
-            <CompletedChallenges />
-            <Countdown />
-          </div>
-          <div>
-            <ChallengeBox />
-          </div>
-        </section>
-      </CountdownProvider>
-    </div >
+        <CountdownProvider>
+          <section>
+            <div>
+              <Profile />
+              <CompletedChallenges />
+              <Countdown />
+            </div>
+            <div>
+              <ChallengeBox />
+            </div>
+          </section>
+        </CountdownProvider>
+      </div >
+    </ChallengesProvider>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const { challengesCompleted, currentExperience, level } = ctx.req.cookies;
+
+  return {
+    props: {
+      challengesCompleted: Number(challengesCompleted),
+      currentExperience: Number(currentExperience),
+      level: Number(level)
+    }
+  }
+};
